@@ -80,7 +80,6 @@ along with this program. If not, see
                 'o88o     o8888o 8""888P\' 8""888P\' `Y8bod8P\' o888o o888o o888o  `Y8bod8P\' o888o `Y888""8o `8oooooo.  `Y8bod8P\' ',
                 '                                                                                         d"     YD            ',
                 '                                                                                         "Y88888P\'            ',
-                '        Aarav Garg <agarg17@student.ohlone.edu> * 2025'
             ];
 
             const colors = ['red', 'darkorange', 'gold', 'chartreuse', 'cyan', 'deepskyblue', 'magenta'];
@@ -103,7 +102,7 @@ along with this program. If not, see
 
                     const firstName = await term.read('[[b;;]First Name]: ');
                     const lastName = await term.read('[[b;;]Last Name]: ');
-                    const email = await term.read('[[b;;]Student Email] (@student.ohlone.edu): ');
+                    const email = await term.read('[[b;;]Institutional Email] ');
                     const studentNo = await term.read('[[b;;]Student No.]: ');
 
                     term.echo('Sending verification code...');
@@ -166,7 +165,6 @@ Use -R to copy directories.
 3. [[b;;]What software is installed?]
 GCC, Clang, Java, Python, Rust, Go, Ruby, Lua, Typst, LaTeX, and more.
 Runs Debian 12 (Bookworm).
-Contact agarg17@student.ohlone.edu for requests.
 
 4. [[b;;]Can I use Visual Studio Code?]
 Yes. Follow: https://code.visualstudio.com/docs/remote/ssh
@@ -177,8 +175,6 @@ Default is 500MB. Contact me if you need more.
 6. [[b;;]How can I reset my password?]
 Contact me from the student email on-file.
 
-7. [[b;;]How can I contact you?]
-agarg17@student.ohlone.edu
 `);
                 } else if (args[0] === 'help' || args[0] === '') {
                     term.echo(`Available commands:
