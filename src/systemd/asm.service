@@ -1,0 +1,13 @@
+[Unit]
+Description=uWSGI instance to serve Assemblage
+After=network.target
+
+[Service]
+User=admin
+Group=www-data
+WorkingDirectory=/srv/asm
+Enviornment="PATH=/srv/asm/asmenv/bin"
+ExecStart=/srv/asm/asmenv/bin/uwsgi --ini /srv/asm/asm.ini
+
+[Install]
+WantedBy=multi-user.target

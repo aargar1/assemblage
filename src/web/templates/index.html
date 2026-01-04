@@ -1,0 +1,208 @@
+<!--
+Copyright (C) 2026-present Aarav Garg.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the Server Side Public License, version 1,
+as published by MongoDB, Inc.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+Server Side Public License for more details.
+
+You should have received a copy of the Server Side Public License
+along with this program. If not, see
+<http://www.mongodb.com/licensing/server-side-public-license>.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Open Computing Account Terminal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- jQuery & jQuery Terminal CSS/JS -->
+    <link href="https://cdn.jsdelivr.net/npm/jquery.terminal/css/jquery.terminal.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery.terminal/js/jquery.terminal.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: black;
+            color: #00ff00;
+            font-family: monospace;
+        }
+
+        #terminal {
+            height: 100%;
+            width: 100%;
+            padding-top: 30px;
+            padding-left: 30px;
+        }
+
+        input, textarea {
+            background: black;
+            color: #00ff00;
+            border: none;
+            font-family: monospace;
+            font-size: 14pt;
+        }
+
+        ::selection {
+            background: #00ff00;
+            color: black;
+        }
+
+        .terminal {
+            --size: 1.2;
+            --font: 'Space Mono';
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+
+    <script>
+        $(function() {
+            const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+            const rainbow = [
+                '      .o.                                                      .o8       oooo                                 ',
+                '     .888.                                                    "888       `888                                 ',
+                '    .8"888.      .oooo.o  .oooo.o  .ooooo.  ooo. .oo.  .oo.    888oooo.   888   .oooo.    .oooooooo  .ooooo.  ',
+                '   .8\' `888.    d88(  "8 d88(  "8 d88\' `88b `888P"Y88bP"Y88b   d88\' `88b  888  `P  )88b  888\' `88b  d88\' `88b ',
+                '  .88ooo8888.   `"Y88b.  `"Y88b.  888ooo888  888   888   888   888   888  888   .oP"888  888   888  888ooo888 ',
+                ' .8\'     `888.  o.  )88b o.  )88b 888    .o  888   888   888   888   888  888  d8(  888  `88bod8P\'  888    .o ',
+                'o88o     o8888o 8""888P\' 8""888P\' `Y8bod8P\' o888o o888o o888o  `Y8bod8P\' o888o `Y888""8o `8oooooo.  `Y8bod8P\' ',
+                '                                                                                         d"     YD            ',
+                '                                                                                         "Y88888P\'            ',
+                '        Aarav Garg <agarg17@student.ohlone.edu> * 2025'
+            ];
+
+            const colors = ['red', 'darkorange', 'gold', 'chartreuse', 'cyan', 'deepskyblue', 'magenta'];
+
+            const rainbow_ansi = rainbow.map((line, i) => {
+                const color = colors[i % colors.length];
+                return `[[;${color};]${line}]`;
+            });
+
+            const desktopGreeting = rainbow_ansi.join('\n') + '\n\nType `create` to create an account or `faq` for common questions.';
+            const mobileGreeting = '[[;yellow;]assemblage]\n\nType `create` to create an account or `faq` for common questions.';
+
+            const greeting = isMobile ? mobileGreeting : desktopGreeting;
+
+            const term = $('#terminal').terminal(async function(command, term) {
+                const args = command.trim().split(/\s+/);
+
+                if (args[0] === 'create') {
+                    term.echo('Press [[b;;]Ctrl+D] to exit');
+
+                    const firstName = await term.read('[[b;;]First Name]: ');
+                    const lastName = await term.read('[[b;;]Last Name]: ');
+                    const email = await term.read('[[b;;]Student Email] (@student.ohlone.edu): ');
+                    const studentNo = await term.read('[[b;;]Student No.]: ');
+
+                    term.echo('Sending verification code...');
+
+                    try {
+                        const response = await fetch('/create_account', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ firstName, lastName, studentEmail: email, studentNo })
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            term.error(`Error: ${data.error}`);
+                            return;
+                        }
+
+                        term.echo('Verification code sent to your email.');
+
+                        const code = await term.read('[[b;;]Enter verification code]: ');
+
+                        const verifyResponse = await fetch('/verify_code', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ code })
+                        });
+
+                        const verifyData = await verifyResponse.json();
+
+                        if (!verifyResponse.ok) {
+                            term.error(`Verification failed: ${verifyData.error}`);
+                        } else {
+                            term.echo(`Account created successfully!
+Username: ${verifyData.username}
+Password: ${verifyData.password}
+
+To login via ssh:
+ssh ${verifyData.username}@assemblage.cc`);
+                        }
+
+                    } catch (err) {
+                        term.error(`Unexpected error: ${err}`);
+                    }
+
+                } else if (args[0] === 'login') {
+                    term.echo('Redirecting to login terminal...');
+                    window.location.href = 'https://assemblage.cc/jupyter';
+                } else if (args[0] === 'faq') {
+                    term.echo(`1. [[b;;]How do I log in to the server?]
+Use SSH: ssh username@asm.aaravgarg.me
+On Windows, use PuTTY: https://www.putty.org
+
+2. [[b;;]How do I copy files to the server?]
+Use scp:
+Upload: scp file username@asm.aaravgarg.me:/home/edu/username/
+Download: scp username@asm.aaravgarg.me:/home/edu/username/file /destination/
+Use -R to copy directories.
+
+3. [[b;;]What software is installed?]
+GCC, Clang, Java, Python, Rust, Go, Ruby, Lua, Typst, LaTeX, and more.
+Runs Debian 12 (Bookworm).
+Contact agarg17@student.ohlone.edu for requests.
+
+4. [[b;;]Can I use Visual Studio Code?]
+Yes. Follow: https://code.visualstudio.com/docs/remote/ssh
+
+5. [[b;;]How can I get more disk space?]
+Default is 500MB. Contact me if you need more.
+
+6. [[b;;]How can I reset my password?]
+Contact me from the student email on-file.
+
+7. [[b;;]How can I contact you?]
+agarg17@student.ohlone.edu
+`);
+                } else if (args[0] === 'help' || args[0] === '') {
+                    term.echo(`Available commands:
+  create   - Create an Open Computing account
+  login    - Open the remote terminal login
+  faq      - Frequently asked questions
+  help     - Show this message`);
+                } else {
+                    term.error(`Unknown command: ${command}`);
+                }
+
+            }, {
+                greetings: greeting,
+                name: 'account_terminal',
+                height: '100%',
+                prompt: '$ '
+            });
+
+            const originalClear = term.clear;
+            term.clear = function () {
+                originalClear.call(this);
+                this.echo(greeting);
+            };
+        });
+    </script>
+</body>
+</html>

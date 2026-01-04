@@ -1,0 +1,151 @@
+<!--
+Copyright (C) 2026-present Aarav Garg.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the Server Side Public License, version 1,
+as published by MongoDB, Inc.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+Server Side Public License for more details.
+
+You should have received a copy of the Server Side Public License
+along with this program. If not, see
+<http://www.mongodb.com/licensing/server-side-public-license>.
+-->
+
+{% extends "page.html" %}
+
+{% block stylesheet %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+    * {
+        box-sizing: border-box;
+        border-radius: 0 !important;
+    }
+
+    body {
+        background-color: #000;
+        color: #fff;
+        font-family: 'Space Mono', monospace;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    #login-panel {
+        border: 1px solid #fff;
+        padding: 40px;
+        width: 400px;
+        box-shadow: 0 0 15px rgba(128,128,128,0.3);
+    }
+
+    h1 {
+        font-size: 1.3rem;
+        margin-bottom: 30px;
+        border-bottom: 1px solid #fff;
+        display: inline-block;
+        padding-bottom: 5px;
+        letter-spacing: 2px;
+    }
+
+    .input-group {
+        margin-bottom: 25px;
+    }
+
+    label {
+        font-size: 0.7rem;
+        margin-bottom: 8px;
+        display: block;
+        color: #aaa;
+        letter-spacing: 1px;
+    }
+
+    input {
+        width: 100%;
+        background: #000;
+        border: 1px solid #444;
+        padding: 12px;
+        color: #fff;
+        font-family: 'Space Mono', monospace;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #fff;
+        background: #0a0a0a;
+    }
+
+    .login-btn {
+        width: 100%;
+        background: #fff;
+        color: #000;
+        border: 1px solid #fff;
+        padding: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        text-transform: uppercase;
+    }
+
+    .login-btn:hover {
+        background: #000;
+        color: #fff;
+    }
+
+    .error {
+        margin-top: 15px;
+        font-size: 0.7rem;
+        color: #ff5555;
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div id="login-panel">
+    <h1>Assemblage IDE</h1>
+
+    <form action="{{ authenticator_login_url }}" method="post">
+        <!-- REQUIRED BY JUPYTERHUB -->
+        <input type="hidden" name="_xsrf" value="{{ xsrf }}"/>
+
+        <div class="input-group">
+            <label for="username">Username</label>
+            <input
+                type="text"
+                name="username"
+                id="username"
+                value="{{ username }}"
+                autofocus
+                autocomplete="username"
+            >
+        </div>
+
+        <div class="input-group">
+            <label for="password">Password</label>
+            <input
+                type="password"
+                name="password"
+                id="password"
+                autocomplete="current-password"
+            >
+        </div>
+
+        <button type="submit" class="login-btn">
+            Initialize Session
+        </button>
+
+        {% if login_error %}
+        <div class="error">
+            {{ login_error }}
+        </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
